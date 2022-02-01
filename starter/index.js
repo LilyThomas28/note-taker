@@ -1,47 +1,43 @@
 const express = require("express");
 const path = require('path');
 const fs = require("fs");
+const db = require('./db/db.json');
+const uniqid = require('uniqid');
 const app = express();
 const PORT = process.env.PORT || 3001;
 app.use(express.json());
 app.use(express.urlencoded({extended : true}));
 app.use(express.static('public'));
 
+// connects and sends a request to db.json
+app.post('/api/notes', (req, res) => {
+   res.status(200).json(db);
+});
+
 // GET Route for notes(notes.html) page
 app.get('/notes', (req, res) => {
-    res.sendFile(path.join(__dirname, './public/notes.html'));
+    res.sendFile(path.join(__dirname, '/public/notes.html'));
 });
 
 // Wildcard route to direct users to a main(index.html) page
 app.get('*', (req, res) =>
-  res.sendFile(path.join(__dirname, './public/index.html'))
+  res.sendFile(path.join(__dirname, '/public/index.html'))
 );
 
- // connects and sends a request to db.json
-app.post('/api/notes', (req, res) => {
-    res.sendFile(path.join(__dirname, "./db/db.json"));
-});
 
 // creating post request that takes JSON input, "title" "text" and adds a new note object to the db.json file
 app.post("/api/notes", (req, res) => {
-    fs.readFile(path.join(__dirname, "./db/db.json"), "utf8", (error, response) => {
-        if (error) {
-            console.log(error);
-        }
-        const note = JSON.parse(response);
-        const noteReq = req.body;
-        const newNoteID = note.length + 1;
-        const newNote = {
-            id: newNoteID,
-            title: noteReq.title,
-            text: noteReq.text
-        };
-        notes.push(newNote);
-        res.json(newNote);
-        fs.writeFile(path.join(__dirname, "./db/db.json"), JSON.stringify(note, null, 2), (err) => {
-            if (err) throw err;
+    const {title, text, id} = req.body;
+    if (title && text) {
+        let response = {title, text, id: uniqid()};
+        db.push(response);
+        fs.writeFile('./db/db.json', JSON.parse(db), (err) => {
+            err ? console.log(err) : console.log("Note added")
         });
-    });
+        res.send("Note added");
+    } else {
+        res.status(400).json('Not working');
+    }
 });
 
 // create listener to start the server

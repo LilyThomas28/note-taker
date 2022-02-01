@@ -19,10 +19,6 @@ app.get('/notes', (req, res) => {
     res.sendFile(path.join(__dirname, '/public/notes.html'));
 });
 
-// Wildcard route to direct users to a main(index.html) page
-app.get('*', (req, res) =>
-  res.sendFile(path.join(__dirname, '/public/index.html'))
-);
 
 
 // creating post request that takes JSON input, "title" "text" and adds a new note object to the db.json file
@@ -39,6 +35,11 @@ app.post("/api/notes", (req, res) => {
         res.status(400).json('Not working');
     }
 });
+
+// Wildcard route to direct users to a main(index.html) page
+app.get('*', (req, res) =>
+  res.sendFile(path.join(__dirname, '/public/index.html'))
+);
 
 // create listener to start the server
 app.listen(PORT, () => {
